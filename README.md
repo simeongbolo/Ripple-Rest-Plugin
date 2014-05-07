@@ -182,4 +182,29 @@ You may also add proxy settings, this is **optional**:
      }
      
      
+####postPayment(acctSecret, Closure pay)[Payment Obj Refrence](https://dev.ripple.com/#sending-payments)
+*Sends a payment from one account to another - Please see offical ripple docs in the provide link above*
+
+**Usage:**
+
+**Note: You must send an Amount object** 
+
+      def response =  rippleRestClientService.postPayment({Secret}){
+      
+                    source_account = {Address}
+                    destination_account ="{Address}"
+                    destination_amount =  new Amount(value: ".0001",currency: "XRP" ,issuer: "")
+     }
      
+####grantTrustLine(String acctSecret, String address, Closure trustArgs)[TrustLine Obj refrence](https://dev.ripple.com/#granting-a-trustline)
+*Grants a trustline*
+
+**Usage:**
+
+    
+    def response = rippleRestClientService.grantTrustLine({Secret},{Address}){
+       limit = 5
+       currency ="USD"
+       counterparty = "{counter party's address}"
+       allows_rippling = true
+    }
