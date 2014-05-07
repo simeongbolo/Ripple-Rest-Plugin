@@ -104,4 +104,23 @@ You may also add proxy settings, this is **optional**:
          assert response.payment.source_account = "Some account"
          
          
+###getPaymentQuery(String address, Closure payArgs)[Payment Obj Refrence](https://dev.ripple.com/#payment-history)
+*Gets payment information using query objects provided in the closure*
+**payArgs - possible args:**
+*source_account(String)*
+*destination_account(String)*
+*exclude_failed(bool)*
+*start_ledger(int)*
+*end_ledger(int)*
+*end_ledger(bool)*
+*results_per_page(int)*
+*page(int)*
+*direction*
+*earliest_first*
 
+**Usage:**
+        
+        def response = rippleRestClientService.getPaymentQuery(testAddress){
+            earliest_first = true
+            direction = "incoming"
+        }
