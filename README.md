@@ -20,7 +20,7 @@ This is **required**:
                  }
               }
 
-You may also add proxy settings, this is **optinal**:
+You may also add proxy settings, this is **optional**:
 
   ```
   rippleRest{
@@ -53,20 +53,55 @@ You may also add proxy settings, this is **optinal**:
 ###setNewResourceid(id)
 
 
-     Sets the resourceId that will be used for sending payments
-     this must be set in order to prevent double spending
-     param id - the new resource Id
+*Sets the resourceId that will be used for sending payments*
+*this must be set in order to prevent double spending*
+*param id - the new resource Id*
 
-    
 
-  
 ###generateNewResourceId()
 
 
-     generates a new resource Id to be used for sending payments.
-     YOU MUST GENERATE A NEW RESOURCE ID 
-     with every new payment
-     this helps prevent double spending
+*generates a new resource Id to be used for sending payments.*
+*YOU MUST GENERATE A NEW RESOURCE ID*
+*with every new payment*
+*this helps prevent double spending*
+
+###getBalances(String address)[Balances Refrence](https://dev.ripple.com/#account-balances)
+*Gets the balances for the provided account*
+*Returns JSON Object Representation*
+**Usage:**
+
+
+    def response = rippleRestClientService.getBalances("rippleAddress")
+        assert response.success == true
+        assert response.balances.currency == ["XRP","USD"]
+
+###getConnectionStatus()[Server Obj Refrence](https://dev.ripple.com/#get-server-status)
+*Gets the server connection status*
+
+
+###getNotification(String address, String hash)[Notification Obj Refrence](https://dev.ripple.com/#checking-notifications)
+*Gets the transaction notification for a given address and hash*
+
+
      
-     
+###getAccountSettings(String address)
+*Returns JSON object with the account settings for a given address*
+**Usage:**
+
+
+###getPayment(String address, Closure payArgs)[Payment Obj Refrence](https://dev.ripple.com/#confirming-a-payment)
+*Gets the payment info for a given address and hash or uuid*
+**payArgs's  possible args = [hash,uuid]**
+
+**Usage:**
+         
+         
+         def response =  rippleRestClientService.getPayment({Address}){
+                 hash = {AddressPaymentHash}
+                 uuid = {uuid}
+         }
+         assert response.payment.source_account = "Some account"
+         
+         
 
