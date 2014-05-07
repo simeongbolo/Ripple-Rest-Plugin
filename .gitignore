@@ -1,0 +1,12 @@
+build/
+.gradle/
+plugin.xml
+target
+out
+test
+Scripts
+web-app
+*.zip
+*.log
+.settings
+.idea
