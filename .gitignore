@@ -6,7 +6,6 @@ out
 test
 Scripts
 web-app
-*.zip
 *.log
 .settings
 .idea
