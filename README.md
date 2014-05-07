@@ -50,7 +50,7 @@ You may also add proxy settings, this is **optional**:
   ```
 ## Method Detail
 
-###setNewResourceid(id)
+####setNewResourceid(id)
 
 
 *Sets the resourceId that will be used for sending payments*
@@ -58,15 +58,18 @@ You may also add proxy settings, this is **optional**:
 *param id - the new resource Id*
 
 
-###generateNewResourceId()
+####generateNewResourceId()
 
 
 *generates a new resource Id to be used for sending payments.*
-*YOU MUST GENERATE A NEW RESOURCE ID*
+**YOU MUST GENERATE A NEW RESOURCE ID**
 *with every new payment*
 *this helps prevent double spending*
 
-###getBalances(String address)[Balances Refrence](https://dev.ripple.com/#account-balances)
+####getUuid()[Refrence](https://dev.ripple.com/#create-client-resource-id)
+*creates a universally unique identifier (UUID) value which can be used to calculate a client resource ID for a payment*
+
+####getBalances(String address)[Balances Refrence](https://dev.ripple.com/#account-balances)
 *Gets the balances for the provided account*
 *Returns JSON Object Representation*
 **Usage:**
@@ -76,21 +79,21 @@ You may also add proxy settings, this is **optional**:
         assert response.success == true
         assert response.balances.currency == ["XRP","USD"]
 
-###getConnectionStatus()[Server Obj Refrence](https://dev.ripple.com/#get-server-status)
+####getConnectionStatus()[Server Obj Refrence](https://dev.ripple.com/#get-server-status)
 *Gets the server connection status*
 
 
-###getNotification(String address, String hash)[Notification Obj Refrence](https://dev.ripple.com/#checking-notifications)
+####getNotification(String address, String hash)[Notification Obj Refrence](https://dev.ripple.com/#checking-notifications)
 *Gets the transaction notification for a given address and hash*
 
 
      
-###getAccountSettings(String address)
+####getAccountSettings(String address)
 *Returns JSON object with the account settings for a given address*
 **Usage:**
 
 
-###getPayment(String address, Closure payArgs)[Payment Obj Refrence](https://dev.ripple.com/#confirming-a-payment)
+####getPayment(String address, Closure payArgs)[Payment Obj Refrence](https://dev.ripple.com/#confirming-a-payment)
 *Gets the payment info for a given address and hash or uuid*
 **payArgs's  possible args = [hash,uuid]**
 
@@ -104,18 +107,28 @@ You may also add proxy settings, this is **optional**:
          assert response.payment.source_account = "Some account"
          
          
-###getPaymentQuery(String address, Closure payArgs)[Payment Obj Refrence](https://dev.ripple.com/#payment-history)
+####getPaymentQuery(String address, Closure payArgs)[Payment Obj Refrence](https://dev.ripple.com/#payment-history)
 *Gets payment information using query objects provided in the closure*
 **payArgs - possible args:**
+
 *source_account(String)*
+
 *destination_account(String)*
+
 *exclude_failed(bool)*
+
 *start_ledger(int)*
+
 *end_ledger(int)*
+
 *end_ledger(bool)*
+
 *results_per_page(int)*
+
 *page(int)*
+
 *direction*
+
 *earliest_first*
 
 **Usage:**
@@ -124,3 +137,49 @@ You may also add proxy settings, this is **optional**:
             earliest_first = true
             direction = "incoming"
         }
+
+####getTransaction()[Transaction Obj Refrence](https://dev.ripple.com/#retrieve-ripple-transaction)
+*Get the transaction for  a give hash*
+
+
+####getTrustLines(String address, Closure trustArgs)[Trustline Obj Refrence](https://dev.ripple.com/#trustlines)
+*gets the trustline for a given address*
+**Usage:**
+
+        response = rippleRestClientService.getTrustLines{
+          currency = "USD"
+          counterparty = "trust's ripple address"
+       }
+
+
+####getAllTrustLines(String address)[Trustline Obj Refrence](https://dev.ripple.com/#trustlines)
+*gets all trustlines for a given address*
+
+
+####getPaths(address, destinationAddress, Closure paths)[Payment Obj Refrence](https://dev.ripple.com/#preparing-a-payment)
+*This will generate a list of possible payments between the two parties for the desired amount, taking into account the established trustlines between the two parties for the currency being transferred*
+
+**Usage:**
+
+            response = rippleRestClientService.getPaths("SourceAddress","destinationAddress"){
+               value = ".10"
+               currency = "XRP"
+               sourceCurrencies = ["USD","CHF","BTC"]
+             }
+             
+####postAccountSettings(acctSecret, String address, Closure actArts)[Account settings Obj Refrence](https://dev.ripple.com/#account-settings)
+*Post new account settings*
+
+**Usage:**
+            
+            def response = rippleRestClientService.postAccountSettings({Secret},{Address}){
+                transfer_rate = 0
+                password_spent =  false
+                require_destination_tag = false
+                require_authorization = false
+                disallow_xrp = false
+                disable_master =  false
+     }
+     
+     
+     
