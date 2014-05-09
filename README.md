@@ -1,7 +1,7 @@
 Ripple-Rest-Plugin
 ==================
 
-A simple client for the [Ripple Rest Api](https://dev.ripple.com/#introduction) 
+A simple client for the [Ripple Rest Api](https://github.com/ripple/ripple-rest/blob/develop/docs/api-reference.md) 
 
 ## Installation
 Run  
