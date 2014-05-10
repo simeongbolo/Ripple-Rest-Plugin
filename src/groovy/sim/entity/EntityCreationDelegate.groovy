@@ -6,6 +6,7 @@ import grails.web.JSONBuilder
  * Created by simeongbolo on 5/5/14.
  * This is a utility for setting object properties that will be
  * used by the RippleRestClientService for submitting requests
+ * and returning full domain objects from requests
  */
 class EntityCreationDelegate {
 
@@ -51,6 +52,24 @@ class EntityCreationDelegate {
             obj.collect { deEmpty(it) }.findAll { it != null }
         } else {
             obj
+        }
+    }
+
+
+    // your API, provide a Map of changes to update a entity. the map value may be static value, or a closure that take up to 2 params
+    def update( entity, Map changes ){
+        changes?.each {k, v ->
+            def newValue;
+            if (v instanceof Closure){
+                switch (v.parameterTypes.length) {
+                    case 0: newValue = v(); break;
+                    case 1: newValue = v(entity[k]); break; // if one params, the closure is called with the field value
+                    case 2: newValue = v(entity[k],entity); break; // if two params, the closure is called with teh field value and the entity
+                }
+            }else{
+                newValue = v
+            }
+            entity[k] = newValue
         }
     }
 

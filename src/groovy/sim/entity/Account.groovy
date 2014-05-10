@@ -12,19 +12,11 @@ class Account {
 
     def secret //– The key that will be used to sign the transaction
     def address //– The Ripple address of the account in question
-    def disable_master
-    def disallow_xrp
-    def password_spent
-    def require_authorization
-    def require_destination_tag
-    def transaction_sequence
-    def email_hash
-    def wallet_locator
-    def message_key
+    Settings settings
     def url
     def hash
-    def transfer_rate
-    def signers
+    def success
+    def ledger
 
     public static String settings(String address){
         return ACCOUNT_SETTINGS.replace("{address}",address)

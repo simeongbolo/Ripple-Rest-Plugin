@@ -11,6 +11,8 @@ import org.springframework.web.client.HttpStatusCodeException
  */
 class ErrorResponse {
 
+    def message
+
     @Delegate HttpStatusCodeException error
 
     @Lazy String text = {

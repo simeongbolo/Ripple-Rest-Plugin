@@ -9,5 +9,6 @@ class TrustLineGrant {
     def limit
     def currency
     def counterparty
-    def allows_rippling
+    def account_allows_rippling
+    def account
 }

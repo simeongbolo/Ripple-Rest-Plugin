@@ -2,6 +2,7 @@ package sim.ripplerest.client
 
 import grails.converters.JSON
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import sim.entity.*
@@ -11,7 +12,7 @@ import sim.rest.RestBuilder
 import sim.rest.RestResponse
 
 /**
- * This is mt main service to access the Ripple rest api
+ * This is the main service to access the Ripple rest api
  * It will:
  *  Load properties from config.groovy
  *  build the correct urls for accessing the ripple rest api
@@ -19,11 +20,11 @@ import sim.rest.RestResponse
  *You must have the proper configuration in place before using this service
  * Example - Config.groovy
  * rippleRest{
-             api{
-                serverUrl = "http://localhost:5990/v1/"
+ api{
+ serverUrl = "http://localhost:5990/v1/"
 
-                 }
-             }
+ }
+ }
  */
 class RippleRestClientService implements InitializingBean {
 
@@ -109,21 +110,34 @@ class RippleRestClientService implements InitializingBean {
     /**
      * Gets the account settings for a given address
      * @param address
-     * @return JSON Object Representation
+     * @return -  A new Account Object
      */
     def getAccountSettings(String address) {
         def resp = restBuilder.get(serverUrl.concat(Account.settings(address)))
-        return handleResponse(resp)
+        def args  = getJSONmap(JSON.parse(resp.body))
+        handleResponse(resp , new Account(), args)
     }
 
     /**
      * Gets the balances for the provided account
      * @param address
-     * @return JSON Object Representation
+     * @return a List of Balance Objects
      */
     def getBalances(String address) {
         def resp = restBuilder.get(serverUrl.concat(Account.balances(address)))
-        return handleResponse(resp)
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+
+        def args  = getJSONmap(JSON.parse(resp.body));
+        def balances = []
+
+        args.balances.each{bal ->
+            Balance b = new Balance()
+            this.delegate.update(b,bal)
+            balances<<b
+        }
+
+        return balances
     }
 
     /**
@@ -139,11 +153,14 @@ class RippleRestClientService implements InitializingBean {
      * Gets the transaction notification for a given address and hash
      * @param address
      * @param hash
-     * @return JSON Object Representation
+     * @return A Notification Object
      */
     def getNotification(String address, String hash) {
         def resp = restBuilder.get(serverUrl.concat(Account.notification(address, hash)))
-        return handleResponse(resp)
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+        def args  = getJSONmap(JSON.parse(resp.body).notification);
+        handleResponse(resp , new NotificationResponse(), args)
     }
 
     /**
@@ -153,10 +170,10 @@ class RippleRestClientService implements InitializingBean {
      *
      *
      * Usage:
-     * def response =  rippleRestClientService.getPayment({Address}){
+     * Payment response =  rippleRestClientService.getPayment({Address}){
      hash = {AddressPaymentHash}
      }*
-     * @return JSON Object Representation
+     * @return Payment Object
      */
     def getPayment(String address, Closure payArgs) {
         Payment pay = new Payment()
@@ -170,7 +187,9 @@ class RippleRestClientService implements InitializingBean {
         } else {
             return new ErrorResponse("Please provide a Uuid or Hash")
         }
-        return handleResponse(resp)
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+        return handleResponse(resp , new Payment(), getJSONmap(JSON.parse(resp.body)).payment)
     }
 
     /**
@@ -181,19 +200,31 @@ class RippleRestClientService implements InitializingBean {
      *                                     page(int)]
      *
      * Usage
-     * def response = rippleRestClientService.getPaymentQuery(testAddress){
+     * def payments = rippleRestClientService.getPaymentQuery(testAddress){
      earliest_first = true
      direction = "incoming"
      }
 
-     @return JSON Object Representation
+     @return A List of Payment Objects
      */
     def getPaymentQuery(String address, Closure payArgs) {
         Payment pay = new Payment()
         delegate.createEntity(pay, payArgs)
 
         def resp = restBuilder.get(serverUrl.concat(Account.paymentWithQuery(address, delegate.current)))
-        return handleResponse(resp)
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+
+        def args  = getJSONmap(JSON.parse(resp.body));
+        def payments = []
+
+        args.payments.each{pa ->
+            Payment p = new Payment()
+            this.delegate.update(p,pa.payment)
+            payments<<p
+        }
+
+        return payments
     }
 
     /**
@@ -206,7 +237,7 @@ class RippleRestClientService implements InitializingBean {
     }
 
     /**
-     * get the transaction for  a give hash
+     * get the transaction for  a given hash
      * @param hash - transaction hash
      * @return JSON Object Representation
      */
@@ -222,13 +253,24 @@ class RippleRestClientService implements InitializingBean {
      * getTrustLines{
      *     currency = "USD"
      *      counterparty = "trust's ripple address"
-     *}* @return JSON Object Representation
+     *}* @return TrustLine Object
      */
     def getTrustLines(String address, Closure trustArgs) {
         TrustLine trustL = new TrustLine()
         delegate.createEntity(trustL, trustArgs)
         def resp = restBuilder.get(serverUrl.concat(TrustLine.trustlineWithQuery(address, delegate.current)))
-        return handleResponse(resp)
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+        def args  = getJSONmap(JSON.parse(resp.body));
+        def trustLines = []
+
+        args.trustLines.each{tl ->
+            TrustLine t = new TrustLine()
+            this.delegate.update(t,tl)
+            trustLines<<t
+        }
+
+        trustLines
     }
 
     /**
@@ -247,6 +289,9 @@ class RippleRestClientService implements InitializingBean {
      */
     def getUuid() {
         def resp = restBuilder.get(serverUrl.concat("uuid"))
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+
         def obj = JSON.parse(resp.body)
         if (obj?.success) {
             return obj.uuid
@@ -261,13 +306,13 @@ class RippleRestClientService implements InitializingBean {
      * @param amount - Required
      * @param c - possible params Closure
      * Usage
-     *      getPaths{
+     *  def payments  =  getPaths{
      *           value = ".10"
      currency = "XRP"
      issuer  = "...I"
      sourceCurrencies = ["USD","CHF","BTC"]
      }*
-     * @return
+     * @return  a list of Payment objects
      */
     def getPaths(address, destinationAddress, Closure paths) {
         Amount amt = new Amount()
@@ -281,8 +326,19 @@ class RippleRestClientService implements InitializingBean {
             resp = restBuilder.get(serverUrl.concat(Payment.paths(address, destinationAddress, amt)))
         }
 
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+        def args  = getJSONmap(JSON.parse(resp.body));
+        def payments = []
 
-        return handleResponse(resp)
+        args.payments.each{pay ->
+            Payment p = new Payment()
+            this.delegate.update(p,pay)
+            payments<<p
+        }
+
+        return payments
+
     }
 
     /**
@@ -292,17 +348,17 @@ class RippleRestClientService implements InitializingBean {
      * @param actArts
      * Usage:
      * def response = rippleRestClientService.postAccountSettings({Secret},{Address}){
-                transfer_rate = 0
-                password_spent =  false
-                require_destination_tag = false
-                require_authorization = false
-                disallow_xrp = false
-                disable_master =  false
+     transfer_rate = 0
+     password_spent =  false
+     require_destination_tag = false
+     require_authorization = false
+     disallow_xrp = false
+     disable_master =  false
      }
-     * @return  JSON Object
+     * @return  An Account Object with thr new account settings
      */
     def postAccountSettings(acctSecret, String address, Closure actArts) {
-        Account acct = new Account();
+        Settings acct = new Settings()
         delegate.createEntity(acct, actArts)
 
         def json = new JsonBuilder()
@@ -315,14 +371,19 @@ class RippleRestClientService implements InitializingBean {
         def resp = restBuilder.post(serverUrl.concat(Account.settings(address))) {
             body json.toString()
         }
-        handleResponse(resp)
+
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+
+        def args  = getJSONmap(JSON.parse(resp.body));
+        handleResponse(resp , new Account(), args)
     }
 
     /**
      *
      * @param acctSecret
      * @param pay
-     * @return
+     * @return PaymentResponse Object
      *
      * Usage:
      * rippleRestClientService.postPayment({Secret}){
@@ -341,11 +402,15 @@ class RippleRestClientService implements InitializingBean {
             client_resource_id resourceId
             payment tmpPayment
         }
-
         def resp = restBuilder.post(serverUrl.concat("payments")) {
             body json.toString()
         }
-        handleResponse(resp)
+
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+
+        def args  = getJSONmap(JSON.parse(resp.body));
+        handleResponse(resp , new PaymentResponse(), args)
     }
 
     /**
@@ -359,7 +424,7 @@ class RippleRestClientService implements InitializingBean {
      currency ="USD"
      counterparty = "{counter party's address}"
      allows_rippling = true
-     }* @return JSON Object
+     }* @return TrustLineGrant Object
      */
     def grantTrustLine(String acctSecret, String address, Closure trustArgs) {
         TrustLineGrant trustL = new TrustLineGrant()
@@ -375,7 +440,12 @@ class RippleRestClientService implements InitializingBean {
         def resp = restBuilder.post(serverUrl.concat(TrustLine.grantTrustline(address))) {
             body json.toString()
         }
-        handleResponse(resp)
+
+        if(hasErrors(resp))
+            return JSON.parse(resp.text)
+
+        def args  = getJSONmap(JSON.parse(resp.body).trustline);
+        handleResponse(resp , new TrustLineGrant(), args)
 
     }
 
@@ -398,16 +468,43 @@ class RippleRestClientService implements InitializingBean {
         this.resourceId = getUuid()
     }
 
-    def handleResponse(resp) {
+   private def handleResponse(resp, entity, args) {
 
-        if (resp instanceof ErrorResponse) {
+        delegate.update(entity,args)
+
+        return  entity
+
+    }
+
+    private def handleResponse(resp) {
+
+        if(hasErrors(resp))
             return JSON.parse(resp.text)
-        }
 
         def obj = JSON.parse(resp.body)
 
         return obj
 
     }
+
+    private def hasErrors(resp){
+        if (resp instanceof ErrorResponse) {
+            return true
+        }
+
+        if(JSON.parse(resp.body).success == false){
+            return true
+
+        }
+        return false
+    }
+
+
+    private def getJSONmap(resp){
+
+        return new JsonSlurper().parseText(resp.toString())
+
+    }
+
 
 }

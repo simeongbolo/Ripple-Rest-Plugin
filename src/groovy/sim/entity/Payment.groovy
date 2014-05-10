@@ -10,8 +10,8 @@ class Payment {
 
     def source_account
     def destination_account
-    def destination_amount
-    def source_amount
+    Amount destination_amount
+    Amount source_amount
     def source_tag
     def destination_tag
     def source_slippage
@@ -22,8 +22,8 @@ class Payment {
     def flag_partial_payment
     def partial_payment
     def timestamp
-    def destination_balance_changes
-    def source_balance_changes
+    Amount destination_balance_changes
+    Amount source_balance_changes
     def state
     def no_direct_ripple
     def ledger
@@ -31,6 +31,7 @@ class Payment {
     def earliest_first
     def hash
     def uuid
+    def result
 
     public static final String paths(String source, String destination , Amount amount){
         if(amount.issuer){
@@ -50,7 +51,7 @@ class Payment {
         sourceCurrencies.each{ it->
           s = s.concat(it+",")
         }
-        return s
+        return s[0..-2]
     }
 
 
