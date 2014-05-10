@@ -296,3 +296,7 @@ You may also add proxy settings, this is **optional**:
         println "The account is " + trustLine.account
         println "The currency is " + trustLine.currency 
         println "The counter party is " + trustLine.counterparty 
+
+
+#Tests
+##>>[Ripple rest api test project](https://github.com/simeongbolo/Ripple-Rest-Client-PluginTest)
