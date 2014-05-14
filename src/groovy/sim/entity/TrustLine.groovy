@@ -24,7 +24,7 @@ class TrustLine {
 
     public static final trustlineWithQuery(String address,def args){
          String s  = TrustLine.TRUSTLINE.replace("{address}",address)
-             s.concat("?")
+        s=  s.concat("?")
         String q = ""
         args?.each{it->
             q= q.concat(it.key+"="+it.value+"&")
