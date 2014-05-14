@@ -6,7 +6,7 @@ A simple client for the [Ripple Rest Api](https://github.com/ripple/ripple-rest/
 ## Installation
 Run  
 
-`grails install-plugin grails-ripple-rest-client-api-0.2.zip` - change the version number if needed
+`grails install-plugin grails-ripple-rest-client-api-0.1.zip` - change the version number if needed
 
 
 ## Basic Usage
