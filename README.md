@@ -183,7 +183,7 @@ You may also add proxy settings, this is **optional**:
 
         }
 
-####getTransaction(transactionHash)[Transaction Obj Refrence](https://dev.ripple.com/#retrieve-ripple-transaction)
+####getTransaction(String transactionHash)[Transaction Obj Refrence](https://dev.ripple.com/#retrieve-ripple-transaction)
 *Get the transaction for  a give hash*
 **Usage**            
             
