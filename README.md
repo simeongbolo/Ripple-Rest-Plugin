@@ -183,14 +183,14 @@ You may also add proxy settings, this is **optional**:
 
         }
 
-####getTransaction()[Transaction Obj Refrence](https://dev.ripple.com/#retrieve-ripple-transaction)
+####getTransaction(transactionHash)[Transaction Obj Refrence](https://dev.ripple.com/#retrieve-ripple-transaction)
 *Get the transaction for  a give hash*
 **Usage**            
-            response = rippleRestClientService.getTransaction(testAddressTransactionHash)
+            
+         def  response = rippleRestClientService.getTransaction(testAddressTransactionHash)
         println "Test for rippleRestClientService.getTransaction\n"
         assert response.success == true
-
-        def transaction = response.transaction
+         def transaction = response.transaction
         println "The Amount is " + transaction.Amount
         println "The Hash is " + transaction.hash
         println "The fee is " + transaction.fee
